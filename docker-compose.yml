@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+
+  fastapi:
+    build: .
+    container_name: expense_tracker
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_HOST: "0.0.0.0"
+      APP_PORT: "8000"
+      DEBUG: "false"
+      DB_HOST: "mysql"
+      DB_PORT: "3306"
+      DB_DATABASE: "expense_tracker"
+      DB_USERNAME: "appuser"
+      DB_PASSWORD: "appsecret"
+      JWT_SECRET_KEY: "your-super-secret-jwt-key-change-in-production"
+      JWT_ALGORITHM: "HS256"
+      LOG_LEVEL: "info"
+      ALLOWED_ORIGINS: "*"
+    volumes:
+      - .:/app
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: expense_tracker
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: appsecret
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  adminer:
+    image: adminer
+    container_name: adminer_ui
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:

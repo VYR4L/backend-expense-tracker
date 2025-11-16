@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import user_routes, balance_routes, categories_routes, goals_routes, transactions_routes
+from api.routes import user_routes, balance_routes, categories_routes, goals_routes, transactions_routes, auth_routes
 import uvicorn
 from config import settings, Base
 from utils.permissions import verify_admin_token
@@ -38,6 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_routes.router)
 app.include_router(user_routes.router)
 app.include_router(balance_routes.router)
 app.include_router(categories_routes.router)

@@ -2,8 +2,10 @@
 from fastapi import APIRouter, Depends, Body
 from controllers.goals_controller import GoalsController
 from models.goals import GoalCreate, GoalUpdate, GoalOut
+from models.users import User
 from sqlalchemy.orm import Session
 from config import get_db
+from auth import get_current_active_user_dependency
 
 
 router = APIRouter(
@@ -13,7 +15,11 @@ router = APIRouter(
 
 
 @router.post("/", response_model=GoalOut, status_code=201)
-async def create_goal(goal_create: GoalCreate, db: Session = Depends(get_db)):
+async def create_goal(
+    goal_create: GoalCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user_dependency)
+):
     """
     Cria uma nova meta.
     """
@@ -21,7 +27,11 @@ async def create_goal(goal_create: GoalCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{goal_id}", response_model=GoalOut)
-async def get_goal(goal_id: int, db: Session = Depends(get_db)):
+async def get_goal(
+    goal_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user_dependency)
+):
     """
     Recupera uma meta pelo ID.
     """
@@ -29,7 +39,11 @@ async def get_goal(goal_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/user/{user_id}", response_model=list[GoalOut])
-async def get_user_goals(user_id: int, db: Session = Depends(get_db)):
+async def get_user_goals(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user_dependency)
+):
     """
     Recupera todas as metas de um usuário.
     """
@@ -37,7 +51,12 @@ async def get_user_goals(user_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{goal_id}", response_model=GoalOut)
-async def update_goal(goal_id: int, goal_update: GoalUpdate, db: Session = Depends(get_db)):
+async def update_goal(
+    goal_id: int,
+    goal_update: GoalUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user_dependency)
+):
     """
     Atualiza uma meta existente.
     """
@@ -45,7 +64,11 @@ async def update_goal(goal_id: int, goal_update: GoalUpdate, db: Session = Depen
 
 
 @router.delete("/{goal_id}", status_code=204)
-async def delete_goal(goal_id: int, db: Session = Depends(get_db)):
+async def delete_goal(
+    goal_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user_dependency)
+):
     """
     Deleta uma meta (soft delete).
     """
@@ -56,7 +79,8 @@ async def delete_goal(goal_id: int, db: Session = Depends(get_db)):
 async def add_amount_to_goal(
     goal_id: int,
     amount: float = Body(..., embed=True),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
     Adiciona um valor ao progresso da meta.

@@ -66,7 +66,26 @@ def test_user():
 
 
 @pytest.fixture
-def test_category():
+def auth_token(test_user):
+    """Fixture para obter token JWT de autenticação."""
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": "test@example.com",
+            "password": "SecurePass123!"
+        }
+    )
+    return response.json()["access_token"]
+
+
+@pytest.fixture
+def auth_headers(auth_token):
+    """Fixture para obter headers de autenticação."""
+    return {"Authorization": f"Bearer {auth_token}"}
+
+
+@pytest.fixture
+def test_category(auth_headers):
     """Fixture para criar uma categoria de teste."""
     response = client.post(
         "/categories/",
@@ -74,6 +93,7 @@ def test_category():
             "name": "Food",
             "category_type": "expense",
             "color": "#FF5722"
-        }
+        },
+        headers=auth_headers
     )
     return response.json()

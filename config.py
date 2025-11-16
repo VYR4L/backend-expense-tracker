@@ -28,9 +28,18 @@ class Settings:
         if cls.DATABASE_URL:
             # Substitui mysql:// por mysql+pymysql:// para o driver correto
             url = cls.DATABASE_URL.replace("mysql://", "mysql+pymysql://")
-            # Adiciona SSL se necessário
-            if "ssl-mode" not in url and "sslmode" not in url:
-                url += "&ssl=true" if "?" in url else "?ssl=true"
+            
+            # Remove ssl-mode (não suportado pelo PyMySQL) e adiciona parâmetros SSL corretos
+            if "ssl-mode=REQUIRED" in url or "ssl-mode=required" in url:
+                url = url.replace("ssl-mode=REQUIRED", "ssl_disabled=false")
+                url = url.replace("ssl-mode=required", "ssl_disabled=false")
+            elif "ssl-mode=" in url:
+                # Remove qualquer outro valor de ssl-mode
+                import re
+                url = re.sub(r'[?&]ssl-mode=[^&]*', '', url)
+                # Adiciona parâmetro SSL correto
+                url += "&ssl_disabled=false" if "?" in url else "?ssl_disabled=false"
+            
             return url
         
         # Caso contrário, constrói a URL a partir das variáveis individuais

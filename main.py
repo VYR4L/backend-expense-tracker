@@ -31,7 +31,7 @@ async def startup_event():
         try:
             from config import init_db
             engine = init_db()
-            Base.metadata.create_all(bind=engine)
+            Base.metadata.create_all(bind=engine, checkfirst=True)
             print("✅ Tabelas do banco de dados criadas/verificadas com sucesso!")
         except Exception as e:
             print(f"❌ Erro ao conectar ao banco de dados: {str(e)}")

@@ -13,6 +13,8 @@ class Settings:
     APP_PORT: int = int(os.getenv("APP_PORT", 8000))
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
 
+    # Database - aceita DATABASE_URL do DigitalOcean ou variáveis individuais
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
     DB_HOST: str = os.getenv("DB_HOST", "localhost")
     DB_PORT: str = os.getenv("DB_PORT", "3306")
     DB_DATABASE: str = os.getenv("DB_DATABASE", "expense_tracker")
@@ -22,6 +24,16 @@ class Settings:
     @classmethod
     def get_database_url(cls) -> str:
         """Retorna a URL de conexão do banco de dados."""
+        # Se DATABASE_URL estiver configurada (DigitalOcean), use ela
+        if cls.DATABASE_URL:
+            # Substitui mysql:// por mysql+pymysql:// para o driver correto
+            url = cls.DATABASE_URL.replace("mysql://", "mysql+pymysql://")
+            # Adiciona SSL se necessário
+            if "ssl-mode" not in url and "sslmode" not in url:
+                url += "&ssl=true" if "?" in url else "?ssl=true"
+            return url
+        
+        # Caso contrário, constrói a URL a partir das variáveis individuais
         from urllib.parse import quote_plus
         password_encoded = quote_plus(cls.DB_PASSWORD)
         return f"mysql+pymysql://{cls.DB_USERNAME}:{password_encoded}@{cls.DB_HOST}:{cls.DB_PORT}/{cls.DB_DATABASE}"

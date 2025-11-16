@@ -1,58 +1,71 @@
 services:
 
   fastapi:
-    build: .
-    container_name: expense_tracker
-    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: expense_tracker_prod
+    restart: unless-stopped
     ports:
       - "8000:8000"
     depends_on:
       mysql:
         condition: service_healthy
-    environment:
-      APP_HOST: "0.0.0.0"
-      APP_PORT: "8000"
-      DEBUG: "true"
-      DB_HOST: "mysql"
-      DB_PORT: "3306"
-      DB_DATABASE: "expense_tracker"
-      DB_USERNAME: "appuser"
-      DB_PASSWORD: "appsecret"
-      JWT_SECRET_KEY: "your-super-secret-jwt-key-change-in-production"
-      JWT_ALGORITHM: "HS256"
-      LOG_LEVEL: "info"
-      ALLOWED_ORIGINS: "*"
-    volumes:
-      - .:/app
+    env_file:
+      - .env
+    networks:
+      - expense_tracker_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   mysql:
     image: mysql:8.0
-    container_name: mysql_db
-    restart: always
+    container_name: mysql_db_prod
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: expense_tracker
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: appsecret
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data_prod:/var/lib/mysql
+      - ./mysql_backup:/backup
+    networks:
+      - expense_tracker_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 20s
+      retries: 5
+      start_period: 30s
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max_connections=200
+      --default-authentication-plugin=mysql_native_password
 
-  adminer:
-    image: adminer
-    container_name: adminer_ui
-    restart: always
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql
+  # Adminer somente se necessário em produção (não recomendado)
+  # adminer:
+  #   image: adminer
+  #   container_name: adminer_ui_prod
+  #   restart: unless-stopped
+  #   ports:
+  #     - "127.0.0.1:8080:8080"
+  #   depends_on:
+  #     - mysql
+  #   networks:
+  #     - expense_tracker_network
+
+networks:
+  expense_tracker_network:
+    driver: bridge
 
 volumes:
-  mysql_data:
+  mysql_data_prod:
+    driver: local

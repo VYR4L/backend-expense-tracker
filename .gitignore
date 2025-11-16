@@ -149,6 +149,20 @@ Lib/
 pyvenv.cfg
 share/
 
+# Docker
+mysql_data/
+mysql_backup/
+*.sql
+*.sql.gz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
 # Spyder project settings
 .spyderproject
 .spyproject

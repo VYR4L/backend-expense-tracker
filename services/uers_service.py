@@ -1,7 +1,6 @@
 from models.users import User, UserCreate, UserOut, UserUpdate
 from sqlalchemy.orm import Session
-from config import get_db
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 import bcrypt
 
 

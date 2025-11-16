@@ -13,12 +13,6 @@ except Exception as e:
     print(f"Erro nas configurações da aplicação: {str(e)}")
     exit(1)
 
-# Inicializa e cria as tabelas no banco apenas se não for teste
-if os.getenv("TESTING") != "true":
-    from config import init_db
-    engine = init_db()
-    Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
     title="Expense Tracker API",
     description="API para gerenciamento de despesas pessoais.",
@@ -29,6 +23,20 @@ app = FastAPI(
     openapi_url="/openapi.json",
     dependencies=[Depends(verify_admin_token)] if not settings.DEBUG else [],
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Inicializa o banco de dados na inicialização da aplicação."""
+    if os.getenv("TESTING") != "true":
+        try:
+            from config import init_db
+            engine = init_db()
+            Base.metadata.create_all(bind=engine)
+            print("✅ Tabelas do banco de dados criadas/verificadas com sucesso!")
+        except Exception as e:
+            print(f"❌ Erro ao conectar ao banco de dados: {str(e)}")
+            print(f"⚠️ Verifique as configurações de conexão: DB_HOST={settings.DB_HOST}, DB_DATABASE={settings.DB_DATABASE}")
+            # Não mata a aplicação - deixa rodar para poder ver os logs
 
 app.add_middleware(
     CORSMiddleware,

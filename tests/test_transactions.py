@@ -10,7 +10,6 @@ class TestTransactionCreation:
         response = client.post(
             "/transactions/",
             json={
-                "user_id": test_user["id"],
                 "description": "Grocery shopping",
                 "amount": 150.50,
                 "transaction_type": "expense",
@@ -32,7 +31,6 @@ class TestTransactionCreation:
         response = client.post(
             "/transactions/",
             json={
-                "user_id": test_user["id"],
                 "description": "Monthly Salary",
                 "amount": 5000.00,
                 "transaction_type": "income",
@@ -51,9 +49,8 @@ class TestTransactionCreation:
         response = client.post(
             "/transactions/",
             json={
-                "user_id": test_user["id"],
                 "description": "Test"
-                # faltam amount, transaction_type, category_id
+                # faltam amount, transaction_type, category_id, date
             },
             headers=auth_headers
         )
@@ -69,7 +66,6 @@ class TestTransactionRetrieval:
         create_response = client.post(
             "/transactions/",
             json={
-                "user_id": test_user["id"],
                 "description": "Coffee",
                 "amount": 5.50,
                 "transaction_type": "expense",
@@ -98,7 +94,6 @@ class TestTransactionRetrieval:
         # Cria múltiplas transações
         for i in range(5):
             client.post("/transactions/", json={
-                "user_id": test_user["id"],
                 "description": f"Transaction {i}",
                 "amount": 10.0 * (i + 1),
                 "transaction_type": "expense",
@@ -135,7 +130,6 @@ class TestTransactionUpdate:
         create_response = client.post(
             "/transactions/",
             json={
-                "user_id": test_user["id"],
                 "description": "Restaurant",
                 "amount": 50.00,
                 "transaction_type": "expense",
@@ -166,7 +160,6 @@ class TestTransactionUpdate:
         create_response = client.post(
             "/transactions/",
             json={
-                "user_id": test_user["id"],
                 "description": "Money",
                 "amount": 100.00,
                 "transaction_type": "expense",
@@ -207,7 +200,6 @@ class TestTransactionDeletion:
         create_response = client.post(
             "/transactions/",
             json={
-                "user_id": test_user["id"],
                 "description": "Temporary",
                 "amount": 10.00,
                 "transaction_type": "expense",
@@ -236,7 +228,6 @@ class TestBalanceUpdates:
         """Testa se balance é criado/atualizado ao criar transação."""
         # Cria transação de entrada
         client.post("/transactions/", json={
-            "user_id": test_user["id"],
             "description": "Salary",
             "amount": 5000.00,
             "transaction_type": "income",
@@ -246,7 +237,6 @@ class TestBalanceUpdates:
         
         # Cria transação de saída
         client.post("/transactions/", json={
-            "user_id": test_user["id"],
             "description": "Rent",
             "amount": 1500.00,
             "transaction_type": "expense",
@@ -267,7 +257,6 @@ class TestBalanceUpdates:
         """Testa se balance é recalculado ao atualizar transação."""
         # Cria transação
         create_response = client.post("/transactions/", json={
-            "user_id": test_user["id"],
             "description": "Shopping",
             "amount": 100.00,
             "transaction_type": "expense",
@@ -288,7 +277,6 @@ class TestBalanceUpdates:
         """Testa se balance é recalculado ao deletar transação."""
         # Cria transação
         create_response = client.post("/transactions/", json={
-            "user_id": test_user["id"],
             "description": "Test",
             "amount": 200.00,
             "transaction_type": "expense",

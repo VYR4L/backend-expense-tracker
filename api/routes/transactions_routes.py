@@ -21,9 +21,9 @@ async def create_transaction(
     current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
-    Cria uma nova transação.
+    Cria uma nova transação do usuário autenticado.
     """
-    return TransactionsController.create_transaction(transaction_create=transaction_create, db=db)
+    return TransactionsController.create_transaction(transaction_create=transaction_create, user_id=current_user.id, db=db)
 
 
 @router.get("/{transaction_id}", response_model=TransactionOut)
@@ -33,9 +33,9 @@ async def get_transaction(
     current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
-    Recupera uma transação pelo ID.
+    Recupera uma transação pelo ID (apenas do usuário autenticado).
     """
-    return TransactionsController.get_transaction(transaction_id=transaction_id, db=db)
+    return TransactionsController.get_transaction(transaction_id=transaction_id, user_id=current_user.id, db=db)
 
 
 @router.get("/", response_model=list[TransactionOut])
@@ -46,10 +46,10 @@ async def get_paginated_transactions(
     current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
-    Recupera uma lista paginada de transações.
+    Recupera uma lista paginada de transações do usuário autenticado.
     """
     skip = (page - 1) * limit
-    return TransactionsController.get_paginated_transactions(skip=skip, limit=limit, db=db)
+    return TransactionsController.get_paginated_transactions(skip=skip, limit=limit, user_id=current_user.id, db=db)
 
 
 @router.put("/{transaction_id}", response_model=TransactionOut)
@@ -60,9 +60,9 @@ async def update_transaction(
     current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
-    Atualiza uma transação existente.
+    Atualiza uma transação existente (apenas do usuário autenticado).
     """
-    return TransactionsController.update_transaction(transaction_id=transaction_id, transaction_update=transaction_update, db=db)
+    return TransactionsController.update_transaction(transaction_id=transaction_id, user_id=current_user.id, transaction_update=transaction_update, db=db)
 
 
 @router.delete("/{transaction_id}", status_code=204)
@@ -72,6 +72,6 @@ async def delete_transaction(
     current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
-    Deleta uma transação.
+    Deleta uma transação (apenas do usuário autenticado).
     """
-    return TransactionsController.delete_transaction(transaction_id=transaction_id, db=db)
+    return TransactionsController.delete_transaction(transaction_id=transaction_id, user_id=current_user.id, db=db)

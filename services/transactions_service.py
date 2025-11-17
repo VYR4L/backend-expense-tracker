@@ -13,12 +13,12 @@ class TransactionsService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_transaction(self, transaction_create: TransactionCreate) -> TransactionOut:
+    def create_transaction(self, transaction_create: TransactionCreate, user_id: int) -> TransactionOut:
         """
         Cria uma nova transação no banco de dados e atualiza o balance.
         """
         new_transaction = Transaction(
-            user_id=transaction_create.user_id,
+            user_id=user_id,
             description=transaction_create.description,
             amount=transaction_create.amount,
             transaction_type=transaction_create.transaction_type,
@@ -30,7 +30,7 @@ class TransactionsService:
         self.db.refresh(new_transaction)
         
         # Atualiza balance do usuário
-        self._update_balance(transaction_create.user_id)
+        self._update_balance(user_id)
         
         return TransactionOut.model_validate(new_transaction)
     
@@ -97,28 +97,35 @@ class TransactionsService:
         self.db.commit()
 
     
-    def get_transaction(self, transaction_id: int) -> TransactionOut:
+    def get_transaction(self, transaction_id: int, user_id: int) -> TransactionOut:
         """
-        Recupera uma transação pelo ID.
+        Recupera uma transação pelo ID (apenas do usuário autenticado).
         """
-        transaction = self.db.query(Transaction).filter(Transaction.id == transaction_id).first()
+        transaction = self.db.query(Transaction).filter(
+            Transaction.id == transaction_id,
+            Transaction.user_id == user_id
+        ).first()
         if not transaction:
             raise HTTPException(status_code=404, detail="Transaction not found")
         
         return TransactionOut.model_validate(transaction)
     
-    def get_paginated_transactions(self, skip: int = 0, limit: int = 10) -> list[TransactionOut]:
+    def get_paginated_transactions(self, skip: int = 0, limit: int = 10, user_id: int = None) -> list[TransactionOut]:
         """
-        Recupera uma lista paginada de transações.
+        Recupera uma lista paginada de transações do usuário.
         """
-        transactions = self.db.query(Transaction).offset(skip).limit(limit).all()
+        query = self.db.query(Transaction).filter(Transaction.user_id == user_id)
+        transactions = query.offset(skip).limit(limit).all()
         return [TransactionOut.model_validate(tx) for tx in transactions]
     
-    def update_transaction(self, transaction_id: int, transaction_update: TransactionUpdate) -> TransactionOut:
+    def update_transaction(self, transaction_id: int, user_id: int, transaction_update: TransactionUpdate) -> TransactionOut:
         """
-        Atualiza os dados de uma transação existente e recalcula o balance.
+        Atualiza os dados de uma transação existente e recalcula o balance (apenas do usuário autenticado).
         """
-        transaction = self.db.query(Transaction).filter(Transaction.id == transaction_id).first()
+        transaction = self.db.query(Transaction).filter(
+            Transaction.id == transaction_id,
+            Transaction.user_id == user_id
+        ).first()
         if not transaction:
             raise HTTPException(status_code=404, detail="Transaction not found")
 
@@ -147,11 +154,14 @@ class TransactionsService:
         
         return TransactionOut.model_validate(transaction)
     
-    def delete_transaction(self, transaction_id: int) -> None:
+    def delete_transaction(self, transaction_id: int, user_id: int) -> None:
         """
-        Deleta uma transação do banco de dados e recalcula o balance.
+        Deleta uma transação do banco de dados e recalcula o balance (apenas do usuário autenticado).
         """
-        transaction = self.db.query(Transaction).filter(Transaction.id == transaction_id).first()
+        transaction = self.db.query(Transaction).filter(
+            Transaction.id == transaction_id,
+            Transaction.user_id == user_id
+        ).first()
         if not transaction:
             raise HTTPException(status_code=404, detail="Transaction not found")
 

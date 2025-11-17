@@ -25,7 +25,6 @@ class Transaction(Base):
 
 
 class TransactionBase(BaseModel):
-    user_id: int
     description: str
     amount: float
     transaction_type: str  # e.g., 'income' or 'expense'
@@ -47,6 +46,7 @@ class TransactionUpdate(BaseModel):
 
 class TransactionOut(TransactionBase):
     id: int
+    user_id: int
     description: str
     amount: float
     transaction_type: str

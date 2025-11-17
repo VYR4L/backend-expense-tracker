@@ -1,7 +1,7 @@
 """Rotas relacionadas a transações."""
 from fastapi import APIRouter, Depends
 from controllers.transactions_controller import TransactionsController
-from models.transactions import TransactionCreate, TransactionUpdate, TransactionOut
+from models.transactions import TransactionCreate, TransactionUpdate, TransactionOut, PaginatedTransactionResponse
 from models.users import User
 from sqlalchemy.orm import Session
 from config import get_db
@@ -38,7 +38,7 @@ async def get_transaction(
     return TransactionsController.get_transaction(transaction_id=transaction_id, user_id=current_user.id, db=db)
 
 
-@router.get("/", response_model=list[TransactionOut])
+@router.get("/", response_model=PaginatedTransactionResponse)
 async def get_paginated_transactions(
     page: int = 1,
     limit: int = 10,
@@ -49,7 +49,7 @@ async def get_paginated_transactions(
     Recupera uma lista paginada de transações do usuário autenticado.
     """
     skip = (page - 1) * limit
-    return TransactionsController.get_paginated_transactions(skip=skip, limit=limit, user_id=current_user.id, db=db)
+    return TransactionsController.get_paginated_transactions(skip=skip, limit=limit, user_id=current_user.id, page=page, db=db)
 
 
 @router.put("/{transaction_id}", response_model=TransactionOut)

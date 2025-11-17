@@ -56,3 +56,10 @@ class TransactionOut(TransactionBase):
     deleted_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
+
+
+class PaginatedTransactionResponse(BaseModel):
+    items: list[TransactionOut]
+    total: int
+    page: int
+    limit: int

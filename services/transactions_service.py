@@ -110,13 +110,24 @@ class TransactionsService:
         
         return TransactionOut.model_validate(transaction)
     
-    def get_paginated_transactions(self, skip: int = 0, limit: int = 10, user_id: int = None) -> list[TransactionOut]:
+    def get_paginated_transactions(self, skip: int = 0, limit: int = 10, user_id: int = None, page: int = 1) -> dict:
         """
-        Recupera uma lista paginada de transações do usuário.
+        Recupera uma lista paginada de transações do usuário com total de itens.
         """
         query = self.db.query(Transaction).filter(Transaction.user_id == user_id)
+        
+        # Total de transações do usuário
+        total = query.count()
+        
+        # Transações paginadas
         transactions = query.offset(skip).limit(limit).all()
-        return [TransactionOut.model_validate(tx) for tx in transactions]
+        
+        return {
+            "items": [TransactionOut.model_validate(tx) for tx in transactions],
+            "total": total,
+            "page": page,
+            "limit": limit
+        }
     
     def update_transaction(self, transaction_id: int, user_id: int, transaction_update: TransactionUpdate) -> TransactionOut:
         """

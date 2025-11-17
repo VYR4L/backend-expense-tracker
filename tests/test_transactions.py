@@ -102,11 +102,17 @@ class TestTransactionRetrieval:
                 "category_id": test_category["id"]
             }, headers=auth_headers)
         
-        # Lista com limite
-        response = client.get("/transactions/?skip=0&limit=3", headers=auth_headers)
+        # Lista página 1 com limite 3
+        response = client.get("/transactions/?page=1&limit=3", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 3
+        
+        # Lista página 2 com limite 3
+        response = client.get("/transactions/?page=2&limit=3", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2  # Restam apenas 2 transações
 
     def test_get_empty_transactions(self, auth_headers):
         """Testa listagem quando não há transações."""

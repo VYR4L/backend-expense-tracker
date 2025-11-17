@@ -22,7 +22,8 @@ class TransactionsService:
             description=transaction_create.description,
             amount=transaction_create.amount,
             transaction_type=transaction_create.transaction_type,
-            category_id=transaction_create.category_id
+            category_id=transaction_create.category_id,
+            date=transaction_create.date
         )
         self.db.add(new_transaction)
         self.db.commit()
@@ -134,6 +135,9 @@ class TransactionsService:
         
         if transaction_update.category_id is not None:
             transaction.category_id = transaction_update.category_id
+        
+        if transaction_update.date is not None:
+            transaction.date = transaction_update.date
 
         self.db.commit()
         self.db.refresh(transaction)

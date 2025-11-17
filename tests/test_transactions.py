@@ -14,7 +14,8 @@ class TestTransactionCreation:
                 "description": "Grocery shopping",
                 "amount": 150.50,
                 "transaction_type": "expense",
-                "category_id": test_category["id"]
+                "category_id": test_category["id"],
+                "date": "2024-01-15T10:30:00Z"
             },
             headers=auth_headers
         )
@@ -35,7 +36,8 @@ class TestTransactionCreation:
                 "description": "Monthly Salary",
                 "amount": 5000.00,
                 "transaction_type": "income",
-                "category_id": test_category["id"]
+                "category_id": test_category["id"],
+                "date": "2024-01-01T00:00:00Z"
             },
             headers=auth_headers
         )
@@ -71,7 +73,8 @@ class TestTransactionRetrieval:
                 "description": "Coffee",
                 "amount": 5.50,
                 "transaction_type": "expense",
-                "category_id": test_category["id"]
+                "category_id": test_category["id"],
+                "date": "2024-01-10T08:00:00Z"
             },
             headers=auth_headers
         )
@@ -99,7 +102,8 @@ class TestTransactionRetrieval:
                 "description": f"Transaction {i}",
                 "amount": 10.0 * (i + 1),
                 "transaction_type": "expense",
-                "category_id": test_category["id"]
+                "category_id": test_category["id"],
+                "date": f"2024-01-{10+i:02d}T12:00:00Z"
             }, headers=auth_headers)
         
         # Lista página 1 com limite 3
@@ -135,7 +139,8 @@ class TestTransactionUpdate:
                 "description": "Restaurant",
                 "amount": 50.00,
                 "transaction_type": "expense",
-                "category_id": test_category["id"]
+                "category_id": test_category["id"],
+                "date": "2024-01-20T19:00:00Z"
             },
             headers=auth_headers
         )
@@ -165,7 +170,8 @@ class TestTransactionUpdate:
                 "description": "Money",
                 "amount": 100.00,
                 "transaction_type": "expense",
-                "category_id": test_category["id"]
+                "category_id": test_category["id"],
+                "date": "2024-01-25T14:00:00Z"
             },
             headers=auth_headers
         )
@@ -205,7 +211,8 @@ class TestTransactionDeletion:
                 "description": "Temporary",
                 "amount": 10.00,
                 "transaction_type": "expense",
-                "category_id": test_category["id"]
+                "category_id": test_category["id"],
+                "date": "2024-01-05T10:00:00Z"
             },
             headers=auth_headers
         )
@@ -233,7 +240,8 @@ class TestBalanceUpdates:
             "description": "Salary",
             "amount": 5000.00,
             "transaction_type": "income",
-            "category_id": test_category["id"]
+            "category_id": test_category["id"],
+            "date": "2024-01-01T00:00:00Z"
         }, headers=auth_headers)
         
         # Cria transação de saída
@@ -242,7 +250,8 @@ class TestBalanceUpdates:
             "description": "Rent",
             "amount": 1500.00,
             "transaction_type": "expense",
-            "category_id": test_category["id"]
+            "category_id": test_category["id"],
+            "date": "2024-01-05T00:00:00Z"
         }, headers=auth_headers)
         
         # Verifica balance
@@ -262,7 +271,8 @@ class TestBalanceUpdates:
             "description": "Shopping",
             "amount": 100.00,
             "transaction_type": "expense",
-            "category_id": test_category["id"]
+            "category_id": test_category["id"],
+            "date": "2024-01-15T10:00:00Z"
         }, headers=auth_headers)
         transaction_id = create_response.json()["id"]
         
@@ -282,7 +292,8 @@ class TestBalanceUpdates:
             "description": "Test",
             "amount": 200.00,
             "transaction_type": "expense",
-            "category_id": test_category["id"]
+            "category_id": test_category["id"],
+            "date": "2024-01-20T16:00:00Z"
         }, headers=auth_headers)
         transaction_id = create_response.json()["id"]
         

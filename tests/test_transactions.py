@@ -105,20 +105,26 @@ class TestTransactionRetrieval:
         response = client.get("/transactions/?page=1&limit=3", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 3
+        assert len(data["items"]) == 3
+        assert data["total"] == 5
+        assert data["page"] == 1
+        assert data["limit"] == 3
         
         # Lista página 2 com limite 3
         response = client.get("/transactions/?page=2&limit=3", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 2  # Restam apenas 2 transações
+        assert len(data["items"]) == 2  # Restam apenas 2 transações
+        assert data["total"] == 5
+        assert data["page"] == 2
 
     def test_get_empty_transactions(self, auth_headers):
         """Testa listagem quando não há transações."""
         response = client.get("/transactions/", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 0
+        assert len(data["items"]) == 0
+        assert data["total"] == 0
 
 
 class TestTransactionUpdate:

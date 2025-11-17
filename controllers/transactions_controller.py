@@ -27,12 +27,12 @@ class TransactionsController:
         return transactions_service.get_transaction(transaction_id, user_id)
 
     @staticmethod
-    def get_paginated_transactions(skip: int = 0, limit: int = 10, user_id: int = None, db: Session = Depends(get_db)) -> list[TransactionOut]:
+    def get_paginated_transactions(skip: int = 0, limit: int = 10, user_id: int = None, page: int = 1, db: Session = Depends(get_db)) -> dict:
         """
         Rota para recuperar uma lista paginada de transações do usuário.
         """
         transactions_service = TransactionsService(db)
-        return transactions_service.get_paginated_transactions(skip, limit, user_id)
+        return transactions_service.get_paginated_transactions(skip, limit, user_id, page)
 
     @staticmethod
     def update_transaction(transaction_id: int, user_id: int, transaction_update: TransactionUpdate, db: Session = Depends(get_db)) -> TransactionOut:

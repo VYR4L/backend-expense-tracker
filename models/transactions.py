@@ -15,6 +15,7 @@ class Transaction(Base):
     amount = Column(Float, nullable=False)
     transaction_type = Column(String(50), nullable=False)  # e.g., 'income' or 'expense'
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    date = Column(DateTime, nullable=False)  # Data em que a transação realmente ocorreu
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     deleted_at = Column(DateTime, nullable=True)
@@ -29,6 +30,7 @@ class TransactionBase(BaseModel):
     amount: float
     transaction_type: str  # e.g., 'income' or 'expense'
     category_id: int
+    date: datetime  # Data em que a transação ocorreu
 
 
 class TransactionCreate(TransactionBase):
@@ -40,6 +42,7 @@ class TransactionUpdate(BaseModel):
     amount: Optional[float] = None
     transaction_type: Optional[str] = None  # e.g., 'income' or 'expense'
     category_id: Optional[int] = None
+    date: Optional[datetime] = None
 
 
 class TransactionOut(TransactionBase):
@@ -47,6 +50,7 @@ class TransactionOut(TransactionBase):
     description: str
     amount: float
     transaction_type: str
+    date: datetime
     created_at: datetime
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None

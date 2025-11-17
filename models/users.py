@@ -22,6 +22,7 @@ class User(Base):
     balance = relationship("Balance", back_populates="user", uselist=False)
     transactions = relationship("Transaction", back_populates="user")
     goals = relationship("Goal", back_populates="user")
+    categories = relationship("Category", back_populates="user")
 
 
 class UserBase(BaseModel):

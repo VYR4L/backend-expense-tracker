@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from config import Base
 
@@ -10,7 +10,8 @@ class Category(Base):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(100), nullable=False)
     category_type = Column(String(50), nullable=False)  # e.g., 'income' or 'expense'
     color = Column(String(7), nullable=False)  # e.g., Hex color code
     icon = Column(String(100), nullable=True)  # e.g., icon name or path
@@ -18,7 +19,8 @@ class Category(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     deleted_at = Column(DateTime, nullable=True)
 
-    # Relacionamento
+    # Relacionamentos
+    user = relationship("User", back_populates="categories")
     transactions = relationship("Transaction", back_populates="category_rel")
 
 

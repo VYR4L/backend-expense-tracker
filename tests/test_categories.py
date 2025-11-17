@@ -212,3 +212,137 @@ class TestCategoryDeletion:
         response = client.delete("/categories/99999", headers=auth_headers)
         assert response.status_code == 404
         assert response.json()["detail"] == "Category not found"
+
+
+class TestCategoryUserIsolation:
+    """Testes para isolamento de categorias entre usuários."""
+
+    def test_users_cannot_see_each_others_categories(self, auth_headers):
+        """Testa que usuários não veem categorias de outros usuários."""
+        # Usuário 1 cria categoria
+        client.post(
+            "/categories/",
+            json={
+                "name": "User1 Category",
+                "category_type": "expense",
+                "color": "#FF5722"
+            },
+            headers=auth_headers
+        )
+        
+        # Cria segundo usuário
+        client.post(
+            "/users/",
+            json={
+                "email": "user2@example.com",
+                "first_name": "Jane",
+                "last_name": "Smith",
+                "password": "SecurePass123!",
+                "confirm_password": "SecurePass123!"
+            }
+        )
+        
+        # Login do segundo usuário
+        login_response = client.post(
+            "/auth/login",
+            data={
+                "username": "user2@example.com",
+                "password": "SecurePass123!"
+            }
+        )
+        user2_headers = {"Authorization": f"Bearer {login_response.json()['access_token']}"}
+        
+        # Usuário 2 lista categorias - não deve ver categorias do usuário 1
+        response = client.get("/categories/", headers=user2_headers)
+        assert response.status_code == 200
+        assert len(response.json()) == 0
+
+    def test_user_cannot_access_another_users_category(self, auth_headers):
+        """Testa que usuário não pode acessar categoria de outro usuário."""
+        # Usuário 1 cria categoria
+        create_response = client.post(
+            "/categories/",
+            json={
+                "name": "User1 Category",
+                "category_type": "expense",
+                "color": "#FF5722"
+            },
+            headers=auth_headers
+        )
+        category_id = create_response.json()["id"]
+        
+        # Cria segundo usuário
+        client.post(
+            "/users/",
+            json={
+                "email": "user2@example.com",
+                "first_name": "Jane",
+                "last_name": "Smith",
+                "password": "SecurePass123!",
+                "confirm_password": "SecurePass123!"
+            }
+        )
+        
+        # Login do segundo usuário
+        login_response = client.post(
+            "/auth/login",
+            data={
+                "username": "user2@example.com",
+                "password": "SecurePass123!"
+            }
+        )
+        user2_headers = {"Authorization": f"Bearer {login_response.json()['access_token']}"}
+        
+        # Usuário 2 tenta acessar categoria do usuário 1
+        response = client.get(f"/categories/{category_id}", headers=user2_headers)
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Category not found"
+
+    def test_user_can_create_category_with_same_name_as_another_user(self, auth_headers):
+        """Testa que diferentes usuários podem ter categorias com mesmo nome."""
+        # Usuário 1 cria categoria
+        response1 = client.post(
+            "/categories/",
+            json={
+                "name": "Food",
+                "category_type": "expense",
+                "color": "#FF5722"
+            },
+            headers=auth_headers
+        )
+        assert response1.status_code == 201
+        
+        # Cria segundo usuário
+        client.post(
+            "/users/",
+            json={
+                "email": "user2@example.com",
+                "first_name": "Jane",
+                "last_name": "Smith",
+                "password": "SecurePass123!",
+                "confirm_password": "SecurePass123!"
+            }
+        )
+        
+        # Login do segundo usuário
+        login_response = client.post(
+            "/auth/login",
+            data={
+                "username": "user2@example.com",
+                "password": "SecurePass123!"
+            }
+        )
+        user2_headers = {"Authorization": f"Bearer {login_response.json()['access_token']}"}
+        
+        # Usuário 2 cria categoria com mesmo nome - deve funcionar
+        response2 = client.post(
+            "/categories/",
+            json={
+                "name": "Food",
+                "category_type": "expense",
+                "color": "#4CAF50"
+            },
+            headers=user2_headers
+        )
+        assert response2.status_code == 201
+        assert response2.json()["name"] == "Food"

@@ -11,12 +11,15 @@ class CategoriesService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_category(self, category_create: CategoryCreate) -> CategoryOut:
+    def create_category(self, category_create: CategoryCreate, user_id: int) -> CategoryOut:
         """
         Cria uma nova categoria no banco de dados.
         """
-        # Verifica se já existe categoria com o mesmo nome
-        existing_category = self.db.query(Category).filter(Category.name == category_create.name).first()
+        # Verifica se já existe categoria com o mesmo nome para este usuário
+        existing_category = self.db.query(Category).filter(
+            Category.name == category_create.name,
+            Category.user_id == user_id
+        ).first()
         if existing_category:
             raise HTTPException(status_code=400, detail="Category with this name already exists")
         
@@ -24,28 +27,35 @@ class CategoriesService:
             name=category_create.name,
             category_type=category_create.category_type,
             color=category_create.color,
-            icon=category_create.icon
+            icon=category_create.icon,
+            user_id=user_id
         )
         self.db.add(new_category)
         self.db.commit()
         self.db.refresh(new_category)
         return CategoryOut.model_validate(new_category)
     
-    def get_category(self, category_id: int) -> CategoryOut:
+    def get_category(self, category_id: int, user_id: int) -> CategoryOut:
         """
-        Recupera uma categoria pelo ID.
+        Recupera uma categoria pelo ID (somente do usuário autenticado).
         """
-        category = self.db.query(Category).filter(Category.id == category_id).first()
+        category = self.db.query(Category).filter(
+            Category.id == category_id,
+            Category.user_id == user_id
+        ).first()
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
         
         return CategoryOut.model_validate(category)
     
-    def get_all_categories(self, category_type: str = None) -> list[CategoryOut]:
+    def get_all_categories(self, user_id: int, category_type: str = None) -> list[CategoryOut]:
         """
-        Recupera todas as categorias, opcionalmente filtradas por tipo.
+        Recupera todas as categorias do usuário, opcionalmente filtradas por tipo.
         """
-        query = self.db.query(Category).filter(Category.deleted_at.is_(None))
+        query = self.db.query(Category).filter(
+            Category.deleted_at.is_(None),
+            Category.user_id == user_id
+        )
         
         if category_type:
             query = query.filter(Category.category_type == category_type)
@@ -53,18 +63,22 @@ class CategoriesService:
         categories = query.all()
         return [CategoryOut.model_validate(cat) for cat in categories]
     
-    def update_category(self, category_id: int, category_update: CategoryUpdate) -> CategoryOut:
+    def update_category(self, category_id: int, user_id: int, category_update: CategoryUpdate) -> CategoryOut:
         """
-        Atualiza os dados de uma categoria existente.
+        Atualiza os dados de uma categoria existente (somente do usuário autenticado).
         """
-        category = self.db.query(Category).filter(Category.id == category_id).first()
+        category = self.db.query(Category).filter(
+            Category.id == category_id,
+            Category.user_id == user_id
+        ).first()
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
 
         if category_update.name is not None:
-            # Verifica se o novo nome já existe
+            # Verifica se o novo nome já existe para este usuário
             existing = self.db.query(Category).filter(
                 Category.name == category_update.name,
+                Category.user_id == user_id,
                 Category.id != category_id
             ).first()
             if existing:
@@ -84,11 +98,14 @@ class CategoriesService:
         self.db.refresh(category)
         return CategoryOut.model_validate(category)
     
-    def delete_category(self, category_id: int) -> None:
+    def delete_category(self, category_id: int, user_id: int) -> None:
         """
-        Deleta uma categoria do banco de dados (soft delete).
+        Deleta uma categoria do banco de dados (soft delete - somente do usuário autenticado).
         """
-        category = self.db.query(Category).filter(Category.id == category_id).first()
+        category = self.db.query(Category).filter(
+            Category.id == category_id,
+            Category.user_id == user_id
+        ).first()
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
 

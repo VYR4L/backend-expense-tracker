@@ -23,7 +23,7 @@ async def create_category(
     """
     Cria uma nova categoria.
     """
-    return CategoriesController.create_category(category_create=category_create, db=db)
+    return CategoriesController.create_category(category_create=category_create, user_id=current_user.id, db=db)
 
 
 @router.get("/{category_id}", response_model=CategoryOut)
@@ -33,9 +33,9 @@ async def get_category(
     current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
-    Recupera uma categoria pelo ID.
+    Recupera uma categoria pelo ID (apenas do usuário autenticado).
     """
-    return CategoriesController.get_category(category_id=category_id, db=db)
+    return CategoriesController.get_category(category_id=category_id, user_id=current_user.id, db=db)
 
 
 @router.get("/", response_model=list[CategoryOut])
@@ -45,9 +45,9 @@ async def get_all_categories(
     current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
-    Recupera todas as categorias, opcionalmente filtradas por tipo.
+    Recupera todas as categorias do usuário, opcionalmente filtradas por tipo.
     """
-    return CategoriesController.get_all_categories(category_type=category_type, db=db)
+    return CategoriesController.get_all_categories(user_id=current_user.id, category_type=category_type, db=db)
 
 
 @router.put("/{category_id}", response_model=CategoryOut)
@@ -58,9 +58,9 @@ async def update_category(
     current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
-    Atualiza uma categoria existente.
+    Atualiza uma categoria existente (apenas do usuário autenticado).
     """
-    return CategoriesController.update_category(category_id=category_id, category_update=category_update, db=db)
+    return CategoriesController.update_category(category_id=category_id, user_id=current_user.id, category_update=category_update, db=db)
 
 
 @router.delete("/{category_id}", status_code=204)
@@ -70,6 +70,6 @@ async def delete_category(
     current_user: User = Depends(get_current_active_user_dependency)
 ):
     """
-    Deleta uma categoria (soft delete).
+    Deleta uma categoria (soft delete) do usuário autenticado.
     """
-    return CategoriesController.delete_category(category_id=category_id, db=db)
+    return CategoriesController.delete_category(category_id=category_id, user_id=current_user.id, db=db)

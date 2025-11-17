@@ -40,7 +40,7 @@ async def get_transaction(
 
 @router.get("/", response_model=list[TransactionOut])
 async def get_paginated_transactions(
-    skip: int = 0,
+    page: int = 1,
     limit: int = 10,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user_dependency)
@@ -48,6 +48,7 @@ async def get_paginated_transactions(
     """
     Recupera uma lista paginada de transações.
     """
+    skip = (page - 1) * limit
     return TransactionsController.get_paginated_transactions(skip=skip, limit=limit, db=db)
 
 

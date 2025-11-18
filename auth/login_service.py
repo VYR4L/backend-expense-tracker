@@ -18,7 +18,7 @@ class LoginService:
         self.db = db
         self.secret_key = settings.JWT_SECRET_KEY
         self.algorithm = settings.JWT_ALGORITHM
-        self.acess_token_expire_minutes = 120  # Tempo de expiração do token em minutos (2 horas)
+        self.access_token_expire_minutes = 120  # Tempo de expiração do token em minutos (2 horas)
     
     def authenticate_user(self, email: str, password: str) -> Optional[User]:
         """
